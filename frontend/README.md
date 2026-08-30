@@ -1,32 +1,58 @@
-# React + TypeScript + Vite
+# ReadTrack 📚
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A personal reading tracker built with React and TypeScript. Track the books you own, want to read, or have finished — filter by status, search by title or author, and view your reading stats at a glance.
 
-Currently, two official plugins are available:
+Built as a learning project to practice React fundamentals (hooks, component composition, routing)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Library view** — browse all your books as catalog-style cards, with cover images pulled from the Open Library API
+- **Filter & search** — filter by status (library / to read / read) and search by title or author
+- **Add, edit, and delete books** — full CRUD on your local reading list
+- **Dashboard** — stats on total books, pages read, and a breakdown by genre
+- **Persistent storage** — your data is saved in `localStorage`, so it survives page reloads
+- **Client-side routing** — navigate between Library and Dashboard with `react-router-dom`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the Oxlint configuration
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/) — build tool and dev server
+- [react-router-dom](https://reactrouter.com/) — routing
+- Plain CSS (custom design system, no UI framework)
+- [Open Library Covers API](https://openlibrary.org/dev/docs/api/covers) — book cover images
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Getting started
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+git clone https://github.com/AnarresyUrras/readtrack.git
+cd readtrack/frontend
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The app will be running at `http://localhost:5173`.
+
+## Project structure
+
+```
+src/
+  components/   # reusable UI pieces (BookCard, Filters, SearchBar, AddBookForm, Nav)
+  pages/        # route-level views (Library, Dashboard)
+  hooks/        # custom hooks (useBooks — state + localStorage persistence)
+  types/        # shared TypeScript types
+  data/         # mock book data used on first load
+```
+
+## Roadmap
+
+- [ ] Deploy to Vercel/Netlify
+- [ ] Book detail view with dynamic routing (`/library/:id`)
+- [ ] Empty states for search/filter with no results
+- [ ] Reading dates (started/finished) and a simple reading timeline
+- [ ] Sort books (by title, author, year, date added)
+- [ ] Accessibility pass (keyboard navigation, screen reader labels)
+- [ ] Mobile-responsive refinements
+
+## Live demo
+
+Coming soon.
