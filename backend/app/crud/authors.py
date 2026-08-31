@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.author import Author
 from app.schemas.author import AuthorCreate
+from app.models.book import Book
 
 
 def get_authors(db: Session) -> list[Author]:
@@ -20,8 +21,18 @@ def create_author(db: Session, author: AuthorCreate) -> Author:
     db.add(db_author)
     db.commit()
     db.refresh(db_author)
-
+    
     return db_author
+
+def update_author(db: Session, db_author: Author, author: AuthorCreate) -> Author:
+    db_author.name = author.name
+    db.commit()
+    db.refresh(db_author)
+    return db_author
+
+def author_has_books(db: Session, author_id: int) -> bool:
+    statement = select(Book).where(Book.author_id == author_id).limit(1)
+    return db.scalars(statement).first() is not None
 
 
 def delete_author(db: Session, author: Author) -> None:

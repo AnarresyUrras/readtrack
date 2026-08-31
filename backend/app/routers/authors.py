@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.crud.authors import (
+    author_has_books,
     create_author,
     delete_author,
     get_author,
@@ -45,9 +46,10 @@ def remove_author(author_id: int, db: Session = Depends(get_db)):
     author = get_author(db, author_id)
 
     if author is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Author not found",
-        )
+        raise HTTPException(status_code=404, detail="Author not found")
 
+    if author_has_books(db, author_id):
+        raise HTTPException(status_code=400, detail="Cannot delete author with associated books",
+        )
+        
     delete_author(db, author)

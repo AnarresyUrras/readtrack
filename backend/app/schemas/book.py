@@ -2,13 +2,14 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.enums import ReadingStatus
 
 class BookBase(BaseModel):
     title: str
     isbn: str | None = None
     pages: int | None = Field(default=None, gt=0)
     author_id: int
-    status: str
+    status: ReadingStatus
     start_reading: date | None = None
     finish_reading: date | None = None
     rating: int | None = Field(default=None, ge=1, le=5)

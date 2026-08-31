@@ -1,10 +1,15 @@
 from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Enum as SAEnum
+from app.models.enums import ReadingStatus
 
 from app.database import Base
-from app.models.author import Author
+
+if TYPE_CHECKING:
+    from app.models.author import Author
 
 
 class Book(Base):
@@ -23,8 +28,8 @@ class Book(Base):
         nullable=False
     )
 
-    status: Mapped[str] = mapped_column(
-        String(30),
+    status: Mapped[ReadingStatus] = mapped_column(
+        SAEnum(ReadingStatus, name="reading_status"),
         nullable=False
     )
 
@@ -36,4 +41,4 @@ class Book(Base):
 
     notes: Mapped[str | None] = mapped_column(nullable=True)
 
-    author: Mapped["Author"] = relationship()
+    author: Mapped["Author"] = relationship(back_populates="books")
