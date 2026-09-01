@@ -14,7 +14,7 @@ class Author(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    books: Mapped[list["Book"]] = relationship(back_populates="author")
     author_gender: Mapped[AuthorGender | None] = mapped_column(
         SAEnum(AuthorGender, name="author_gender"),
         nullable=True)
+    books: Mapped[list["Book"]] = relationship(back_populates="author")
