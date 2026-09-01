@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Enum as SAEnum
+from app.models.enums import AuthorGender
 
 from app.database import Base
 if TYPE_CHECKING:
@@ -12,4 +14,7 @@ class Author(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    author_gender: Mapped[AuthorGender | None] = mapped_column(
+        SAEnum(AuthorGender, name="author_gender"),
+        nullable=True)
     books: Mapped[list["Book"]] = relationship(back_populates="author")
