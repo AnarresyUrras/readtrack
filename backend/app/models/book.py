@@ -35,4 +35,4 @@ class Book(Base):
     )
 
     author: Mapped["Author"] = relationship(back_populates="books")
-    readings: Mapped[list["Reading"]] = relationship(back_populates="book")
+    readings: Mapped[list["Reading"]] = relationship(back_populates="book", order_by="Reading.id")

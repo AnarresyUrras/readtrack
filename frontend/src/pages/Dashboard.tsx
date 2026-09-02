@@ -1,15 +1,20 @@
 import { useBooks } from '../hooks/useBooks';
+import { getDisplayStatus } from '../utils/readingStatus';
 
 function Dashboard() {
-    const { books } = useBooks();
+    const { books, loading, error } = useBooks();
+
+    if (loading) return <p>Loading dashboard…</p>;
+    if (error) return <p role="alert">Error: {error}</p>;
 
     const totalBooks = books.length;
-    const readCount = books.filter((b) => b.status === 'read').length;
-    const toReadCount = books.filter((b) => b.status === 'to_read').length;
-    const libraryCount = books.filter((b) => b.status === 'library').length;
+    const readCount = books.filter((b) => getDisplayStatus(b) === 'read').length;
+    const readingCount = books.filter((b) => getDisplayStatus(b) === 'reading').length;
+    const toReadCount = books.filter((b) => getDisplayStatus(b) === 'to_read').length;
+    const libraryCount = books.filter((b) => getDisplayStatus(b) === 'in_library').length;
 
     const totalPagesRead = books
-        .filter((b) => b.status === 'read')
+        .filter((b) => getDisplayStatus(b) === 'read')
         .reduce((sum, b) => sum + (b.pages ?? 0), 0);
 
     const byGenre = books.reduce<Record<string, number>>((acc, book) => {
@@ -28,6 +33,10 @@ function Dashboard() {
                 <div className="stat-card">
                     <span className="stat-number">{readCount}</span>
                     <span className="stat-label">Read</span>
+                </div>
+                <div className="stat-card">
+                    <span className="stat-number">{readingCount}</span>
+                    <span className="stat-label">Reading</span>
                 </div>
                 <div className="stat-card">
                     <span className="stat-number">{toReadCount}</span>

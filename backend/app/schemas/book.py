@@ -2,7 +2,8 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.enums import ReadingStatus, BookFormat
+from app.models.enums import BookFormat
+from app.schemas.author import AuthorResponse
 from app.schemas.reading import ReadingResponse
 
 class BookBase(BaseModel):
@@ -28,6 +29,7 @@ class BookCreate(BookBase):
 
 class BookResponse(BookBase):
     id: int
+    author: AuthorResponse
     readings: list[ReadingResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
