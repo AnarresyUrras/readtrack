@@ -50,7 +50,6 @@ def find_or_create_author(db: Session, data: AuthorFindOrCreate) -> AuthorMatchR
     if existing:
         return AuthorMatchResult(status="found", author=existing)
 
-    # 2. Si no forzamos creación, buscar sugerencias por apellido
     if not data.force_create:
         surname = _extract_surname(normalized_name)
         if surname:
@@ -59,7 +58,6 @@ def find_or_create_author(db: Session, data: AuthorFindOrCreate) -> AuthorMatchR
             if candidates:
                 return AuthorMatchResult(status="suggestions", suggestions=candidates)
 
-    # 3. No hay match ni sugerencias (o se forzó creación) -> crear
     new_author = create_author(db, data)
     return AuthorMatchResult(status="created", author=new_author)
 

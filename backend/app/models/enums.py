@@ -2,6 +2,7 @@ from enum import Enum
 
 class ReadingStatus(str, Enum):
     to_read = "to_read"
+    reading = "reading"
     read = "read"
     in_library = "in_library"
 

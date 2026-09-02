@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import authors, books
+from app.routers import authors, books, readings
 
 
 app = FastAPI(
@@ -10,6 +10,7 @@ app = FastAPI(
 
 app.include_router(books.router)
 app.include_router(authors.router)
+app.include_router(readings.router)
 
 @app.get("/")
 def root():
