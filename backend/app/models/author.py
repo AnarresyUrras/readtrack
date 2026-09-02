@@ -17,4 +17,5 @@ class Author(Base):
     author_gender: Mapped[AuthorGender | None] = mapped_column(
         SAEnum(AuthorGender, name="author_gender"),
         nullable=True)
+    country: Mapped[str | None] = mapped_column(String(100), nullable=True)
     books: Mapped[list["Book"]] = relationship(back_populates="author")

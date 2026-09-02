@@ -1,15 +1,16 @@
-import type { Book } from "../types/Book";
+import type { ReadingStatus } from "../types/Book";
 
 interface FiltersProps {
-    currentFilter: Book['status'] | 'all';
-    onFilterChange: (filter: Book['status'] | 'all') => void;
+    currentFilter: ReadingStatus | 'all';
+    onFilterChange: (filter: ReadingStatus | 'all') => void;
 }
 
 function Filters({ currentFilter, onFilterChange }: FiltersProps) {
-    const options: { label: string; value: Book['status'] | 'all'}[] = [
+    const options: { label: string; value: ReadingStatus | 'all'}[] = [
         {label: 'All', value: 'all'},
-        {label: 'Library', value: 'library'},
+        {label: 'In library', value: 'in_library'},
         {label: 'To read', value: 'to_read'},
+        {label: 'Reading', value: 'reading'},
         {label: 'Read', value: 'read'},
     ];
 

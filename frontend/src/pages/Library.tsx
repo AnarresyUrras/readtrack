@@ -4,21 +4,23 @@ import BookCard from '../components/BookCard';
 import Filters from '../components/Filters';
 import SearchBar from '../components/SearchBar';
 import AddBookForm from '../components/AddBookForm';
-import type { Book } from '../types/Book';
+import type { Book, ReadingStatus } from '../types/Book';
+import { getDisplayStatus } from '../utils/readingStatus';
 
 function Library() {
-    const { books, addBook, updateBook, deleteBook } = useBooks();
-    const [filter, setFilter] = useState<Book['status'] | 'all'>('all');
+    const { books, loading, error, addBook, updateBook, deleteBook, deleteBookWithReadings, updateBookStatus } = useBooks();
+    const [filter, setFilter] = useState<ReadingStatus | 'all'>('all');
     const [search, setSearch] = useState('');
     const [bookToEdit, setBookToEdit] = useState<Book | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
 
     const filteredBooks = books
-        .filter((book) => filter === 'all' || book.status === filter)
+        .filter((book) => filter === 'all' || getDisplayStatus(book) === filter)
         .filter((book) => {
             const query = search.toLowerCase();
             return (
                 book.title.toLowerCase().includes(query) ||
-                book.author.toLowerCase().includes(query)
+                book.author.name.toLowerCase().includes(query)
             );
         });
 
@@ -30,8 +32,8 @@ function Library() {
         });
     }
 
-    function handleEditBook(updatedBook: Book) {
-        updateBook(updatedBook);
+    async function handleEditBook(id: number, updatedBook: Parameters<typeof updateBook>[1]) {
+        await updateBook(id, updatedBook);
         setBookToEdit(null);
     }
 
@@ -45,8 +47,31 @@ function Library() {
         setBookToEdit(null);
     }
 
+   async function handleDelete(book: Book) {
+        setActionError(null);
+        try {
+            if (book.readings.length > 0) {
+                const count = book.readings.length;
+                const confirmed = window.confirm(
+                    `"${book.title}" has ${count} reading${count > 1 ? 's' : ''} recorded. ` +
+                    `Delete the book and all its readings? This can't be undone.`
+                );
+                if (!confirmed) return;
+                await deleteBookWithReadings(book);
+            } else {
+                await deleteBook(book.id);
+            }
+        } catch {
+            setActionError('Could not delete the book. Please try again.');
+        }
+    }
+
+    if (loading) return <p>Loading books…</p>;
+    if (error) return <p role="alert">Error: {error}</p>;
+
     return (
         <>
+            {actionError && <p role="alert" className="form-error">{actionError}</p>}
             <AddBookForm
                 onAddBook={addBook}
                 bookToEdit={bookToEdit}
@@ -60,9 +85,9 @@ function Library() {
                     <BookCard
                         key={book.id}
                         book={book}
-                        onUpdateBook={updateBook}
+                        onUpdateStatus={updateBookStatus}
                         onEdit={handleEdit}
-                        onDelete={deleteBook}
+                        onDelete={handleDelete}
                     />
                 ))}
             </section>

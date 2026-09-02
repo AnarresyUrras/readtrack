@@ -7,6 +7,7 @@ from app.crud.books import (
     get_book,
     get_books,
     update_book,
+    book_has_readings
 )
 from app.database import get_db
 from app.schemas.book import BookCreate, BookResponse
@@ -68,4 +69,10 @@ def remove_book(book_id: int, db: Session = Depends(get_db)):
             detail="Book not found",
         )
 
+    if book_has_readings(db, book_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete book with associated readings. Delete its readings first.",
+        )
+        
     delete_book(db, db_book)
