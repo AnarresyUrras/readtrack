@@ -5,11 +5,17 @@ from app.crud.authors import (
     author_has_books,
     create_author,
     delete_author,
+    find_or_create_author,
     get_author,
     get_authors,
 )
 from app.database import get_db
-from app.schemas.author import AuthorCreate, AuthorResponse
+from app.schemas.author import (
+    AuthorCreate,
+    AuthorResponse,
+    AuthorFindOrCreate,
+    AuthorMatchResult,
+)
 
 
 router = APIRouter(
@@ -39,6 +45,11 @@ def read_author(author_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=AuthorResponse, status_code=201)
 def add_author(author: AuthorCreate, db: Session = Depends(get_db)):
     return create_author(db, author)
+
+
+@router.post("/find-or-create", response_model=AuthorMatchResult)
+def find_or_create(data: AuthorFindOrCreate, db: Session = Depends(get_db)):
+    return find_or_create_author(db, data)
 
 
 @router.delete("/{author_id}", status_code=204)

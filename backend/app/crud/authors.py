@@ -1,8 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.models.author import Author
-from app.schemas.author import AuthorCreate
+from app.schemas.author import AuthorFindOrCreate, AuthorMatchResult, AuthorCreate
 from app.models.book import Book
 
 
@@ -41,3 +41,30 @@ def author_has_books(db: Session, author_id: int) -> bool:
 def delete_author(db: Session, author: Author) -> None:
     db.delete(author)
     db.commit()
+
+def find_or_create_author(db: Session, data: AuthorFindOrCreate) -> AuthorMatchResult:
+    normalized_name = data.name.strip()
+
+    statement = select(Author).where(func.lower(Author.name) == normalized_name.lower())
+    existing = db.scalars(statement).first()
+    if existing:
+        return AuthorMatchResult(status="found", author=existing)
+
+    # 2. Si no forzamos creación, buscar sugerencias por apellido
+    if not data.force_create:
+        surname = _extract_surname(normalized_name)
+        if surname:
+            statement = select(Author).where(Author.name.ilike(f"%{surname}%"))
+            candidates = list(db.scalars(statement).all())
+            if candidates:
+                return AuthorMatchResult(status="suggestions", suggestions=candidates)
+
+    # 3. No hay match ni sugerencias (o se forzó creación) -> crear
+    new_author = create_author(db, data)
+    return AuthorMatchResult(status="created", author=new_author)
+
+
+def _extract_surname(name: str) -> str | None:
+    words = [w.strip(".") for w in name.split()]
+    meaningful = [w for w in words if len(w) > 2]
+    return meaningful[-1] if meaningful else None

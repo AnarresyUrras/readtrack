@@ -16,3 +16,12 @@ class AuthorResponse(AuthorBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+    
+class AuthorFindOrCreate(AuthorBase):
+    force_create: bool = False
+
+
+class AuthorMatchResult(BaseModel):
+    status: str  # "found" | "created" | "suggestions"
+    author: AuthorResponse | None = None
+    suggestions: list[AuthorResponse] = []
