@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SAEnum
-from app.models.enums import ReadingStatus
+from app.models.enums import ReadingStatus, BookFormat
 
 from app.database import Base
 
@@ -40,5 +40,19 @@ class Book(Base):
     rating: Mapped[int | None] = mapped_column(nullable=True)
 
     notes: Mapped[str | None] = mapped_column(nullable=True)
+    
+    genre: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    
+    year: Mapped[int | None] = mapped_column(nullable=True)
+    
+    language: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    
+    publisher: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    
+    format: Mapped[BookFormat | None] = mapped_column(
+        SAEnum(BookFormat, name="book_format"), nullable=True
+    )
 
     author: Mapped["Author"] = relationship(back_populates="books")

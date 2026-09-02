@@ -25,12 +25,17 @@ def create_book(db: Session, book: BookCreate) -> Book:
         finish_reading=book.finish_reading,
         rating=book.rating,
         notes=book.notes,
+        genre=book.genre,
+        year=book.year,
+        language=book.language,
+        publisher=book.publisher,
+        category=book.category,
+        format=book.format,
     )
 
     db.add(db_book)
     db.commit()
     db.refresh(db_book)
-
     return db_book
 
 

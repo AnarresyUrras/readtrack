@@ -16,12 +16,15 @@ def get_author(db: Session, author_id: int) -> Author | None:
 
 
 def create_author(db: Session, author: AuthorCreate) -> Author:
-    db_author = Author(name=author.name)
+    db_author = Author(
+        name=author.name,
+        author_gender=author.author_gender,
+        country=author.country,
+    )
 
     db.add(db_author)
     db.commit()
-    db.refresh(db_author)
-    
+    db.refresh(db_author)    
     return db_author
 
 def update_author(db: Session, db_author: Author, author: AuthorCreate) -> Author:
