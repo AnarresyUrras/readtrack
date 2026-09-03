@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { authorsApi } from "../api/author";
-import type { Author, AuthorGender } from "../types/Author";
+import type { Author } from "../types/Author";
 import type { Book, BookCreate, BookFormat } from "../types/Book";
 import { getCurrentReading } from "../utils/readingStatus";
+import AuthorModal from "./AuthorModal";
 
 interface AddBookFormProps {
     onAddBook: (book: BookCreate) => Promise<void>;
@@ -20,13 +20,9 @@ function AddBookForm({
     const [isOpen, setIsOpen] = useState(false);
 
     // --- Author resolution state ---
-    const [authorQuery, setAuthorQuery] = useState('');
-    const [authorGenderInput, setAuthorGenderInput] = useState<AuthorGender | ''>('');
-    const [authorCountryInput, setAuthorCountryInput] = useState('');
     const [resolvedAuthor, setResolvedAuthor] = useState<Author | null>(null);
-    const [authorSuggestions, setAuthorSuggestions] = useState<Author[] | null>(null);
-    const [authorSearchStatus, setAuthorSearchStatus] = useState<'idle' | 'searching' | 'error'>('idle');
-    const [authorError, setAuthorError] = useState<string | null>(null);
+    const [authorModalOpen, setAuthorModalOpen] = useState(false);
+    const [authorModalMode, setAuthorModalMode] = useState<'search' | 'edit'>('search');
 
     // --- Book fields ---
     const [title, setTitle] = useState('');
@@ -49,11 +45,25 @@ function AddBookForm({
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
+    function openAuthorSearch() {
+        setAuthorModalMode('search');
+        setAuthorModalOpen(true);
+    }
+
+    function openAuthorEdit() {
+        setAuthorModalMode('edit');
+        setAuthorModalOpen(true);
+    }
+
+    function handleAuthorResolved(author: Author) {
+        setResolvedAuthor(author);
+        setAuthorModalOpen(false);
+    }
+
     useEffect(() => {
         if (bookToEdit) {
             setResolvedAuthor(bookToEdit.author);
-            setAuthorQuery(bookToEdit.author.name);
-
+            
             setTitle(bookToEdit.title);
             setGenre(bookToEdit.genre ?? '');
             setYear(bookToEdit.year ? bookToEdit.year.toString() : '');
@@ -76,14 +86,6 @@ function AddBookForm({
     }, [bookToEdit]);
 
     function resetForm() {
-        setAuthorQuery('');
-        setAuthorGenderInput('');
-        setAuthorCountryInput('');
-        setResolvedAuthor(null);
-        setAuthorSuggestions(null);
-        setAuthorSearchStatus('idle');
-        setAuthorError(null);
-
         setTitle('');
         setGenre('');
         setYear('');
@@ -101,62 +103,7 @@ function AddBookForm({
         setFinishReading('');
         setSubmitError(null);
     }
-
-    async function handleSearchAuthor() {
-        if (!authorQuery.trim()) return;
-
-        setAuthorSearchStatus('searching');
-        setAuthorError(null);
-        setAuthorSuggestions(null);
-
-        try {
-            const result = await authorsApi.findOrCreate({
-                name: authorQuery.trim(),
-                author_gender: authorGenderInput || undefined,
-                country: authorCountryInput.trim() || undefined,
-                force_create: false,
-            });
-
-            if (result.status === 'suggestions') {
-                setAuthorSuggestions(result.suggestions);
-            } else if (result.author) {
-                setResolvedAuthor(result.author);
-            }
-            setAuthorSearchStatus('idle');
-        } catch {
-            setAuthorSearchStatus('error');
-            setAuthorError('Could not search for author. Try again.');
-        }
-    }
-
-    function pickSuggestion(author: Author) {
-        setResolvedAuthor(author);
-        setAuthorSuggestions(null);
-    }
-
-    async function confirmDifferentAuthor() {
-        setAuthorSearchStatus('searching');
-        try {
-            const result = await authorsApi.findOrCreate({
-                name: authorQuery.trim(),
-                author_gender: authorGenderInput || undefined,
-                country: authorCountryInput.trim() || undefined,
-                force_create: true,
-            });
-            if (result.author) setResolvedAuthor(result.author);
-            setAuthorSuggestions(null);
-            setAuthorSearchStatus('idle');
-        } catch {
-            setAuthorSearchStatus('error');
-            setAuthorError('Could not create author. Try again.');
-        }
-    }
-
-    function changeAuthor() {
-        setResolvedAuthor(null);
-        setAuthorSuggestions(null);
-    }
-
+    
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!resolvedAuthor) return;
@@ -199,7 +146,7 @@ function AddBookForm({
     if (!isOpen) {
         return (
             <div id="book-form" className="add-book-toggle">
-                <button onClick={() => setIsOpen(true)}>Add Book</button>
+                <button className="btn btn-primary" onClick={() => setIsOpen(true)}>Add Book</button>
             </div>
         );
     }
@@ -210,64 +157,31 @@ function AddBookForm({
 
                 {/* --- Author resolution --- */}
                 {!resolvedAuthor ? (
-                    <div className="form-row author-search">
-                        <label htmlFor="authorQuery">Author:</label>
-                        <input
-                            id="authorQuery"
-                            type="text"
-                            value={authorQuery}
-                            onChange={(e) => setAuthorQuery(e.target.value)}
-                            placeholder="Author name"
-                            required
-                        />
-                        <select
-                            value={authorGenderInput}
-                            onChange={(e) => setAuthorGenderInput(e.target.value as AuthorGender | '')}
-                        >
-                            <option value="">Gender (optional)</option>
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
-                            <option value="diverse">Diverse</option>
-                        </select>
-                        <input
-                            type="text"
-                            value={authorCountryInput}
-                            onChange={(e) => setAuthorCountryInput(e.target.value)}
-                            placeholder="Country (optional)"
-                        />
-                        <button
-                            type="button"
-                            onClick={handleSearchAuthor}
-                            disabled={authorSearchStatus === 'searching' || !authorQuery.trim()}
-                        >
-                            {authorSearchStatus === 'searching' ? 'Searching…' : 'Search author'}
+                    <div className="form-row">
+                        <label>Author</label>
+                        <button type="button" className="btn btn-secondary" onClick={openAuthorSearch}>
+                            Select author
                         </button>
-                        {authorError && <p className="form-error">{authorError}</p>}
-
-                        {authorSuggestions && authorSuggestions.length > 0 && (
-                            <div className="author-suggestions">
-                                <p>Did you mean one of these?</p>
-                                {authorSuggestions.map((suggestion) => (
-                                    <button
-                                        key={suggestion.id}
-                                        type="button"
-                                        onClick={() => pickSuggestion(suggestion)}
-                                    >
-                                        {suggestion.name}
-                                    </button>
-                                ))}
-                                <button type="button" onClick={confirmDifferentAuthor}>
-                                    No, it's a different author — create new
-                                </button>
-                            </div>
-                        )}
                     </div>
                 ) : (
                     <div className="form-row author-resolved">
                         <span>Author: <strong>{resolvedAuthor.name}</strong></span>
-                        <button type="button" onClick={changeAuthor}>Change</button>
+                        <button type="button" className="btn btn-secondary btn-small" onClick={openAuthorEdit}>
+                            Edit
+                        </button>
+                        <button type="button" className="btn btn-secondary btn-small" onClick={openAuthorSearch}>
+                            Change
+                        </button>
                     </div>
                 )}
+
+                <AuthorModal
+                    isOpen={authorModalOpen}
+                    mode={authorModalMode}
+                    initialAuthor={resolvedAuthor}
+                    onClose={() => setAuthorModalOpen(false)}
+                    onResolved={handleAuthorResolved}
+                />
 
                 {resolvedAuthor && (
                     <>
@@ -429,6 +343,7 @@ function AddBookForm({
                         <div className="form-actions">
                             <button
                                 type="button"
+                                className="btn btn-secondary"
                                 onClick={() => {
                                     setIsOpen(false);
                                     onCancelEdit();
@@ -437,7 +352,7 @@ function AddBookForm({
                             >
                                 Cancel
                             </button>
-                            <button type="submit" disabled={submitting}>
+                            <button type="submit" className="btn btn-secondary" disabled={submitting}>
                                 {submitting ? 'Saving…' : bookToEdit ? 'Save changes' : 'Add Book'}
                             </button>
                         </div>
