@@ -3,6 +3,8 @@ import type { Author } from "../types/Author";
 import type { Book, BookCreate, BookFormat } from "../types/Book";
 import { getCurrentReading } from "../utils/readingStatus";
 import AuthorModal from "./AuthorModal";
+import AuthorCard from "./AuthorCard";
+import { fetchAuthorPhotoUrl } from "../utils/authorPhoto";
 
 interface AddBookFormProps {
     onAddBook: (book: BookCreate) => Promise<void>;
@@ -21,6 +23,7 @@ function AddBookForm({
 
     // --- Author resolution state ---
     const [resolvedAuthor, setResolvedAuthor] = useState<Author | null>(null);
+    const [resolvedAuthorPhoto, setResolvedAuthorPhoto] = useState<string | null>(null);
     const [authorModalOpen, setAuthorModalOpen] = useState(false);
     const [authorModalMode, setAuthorModalMode] = useState<'search' | 'edit'>('search');
 
@@ -59,6 +62,18 @@ function AddBookForm({
         setResolvedAuthor(author);
         setAuthorModalOpen(false);
     }
+
+    useEffect(() => {
+        if (!resolvedAuthor) {
+            setResolvedAuthorPhoto(null);
+            return;
+        }
+        let cancelled = false;
+        fetchAuthorPhotoUrl(resolvedAuthor.name).then((url) => {
+            if (!cancelled) setResolvedAuthorPhoto(url);
+        });
+        return () => { cancelled = true; };
+    }, [resolvedAuthor]);
 
     useEffect(() => {
         if (bookToEdit) {
@@ -164,15 +179,20 @@ function AddBookForm({
                         </button>
                     </div>
                 ) : (
-                    <div className="form-row author-resolved">
-                        <span>Author: <strong>{resolvedAuthor.name}</strong></span>
-                        <button type="button" className="btn btn-secondary btn-small" onClick={openAuthorEdit}>
-                            Edit
-                        </button>
-                        <button type="button" className="btn btn-secondary btn-small" onClick={openAuthorSearch}>
-                            Change
-                        </button>
-                    </div>
+                    <AuthorCard
+                        author={resolvedAuthor}
+                        photoUrl={resolvedAuthorPhoto}
+                        actions={
+                            <>
+                                <button type="button" className="btn btn-secondary btn-small" onClick={openAuthorEdit}>
+                                    Edit
+                                </button>
+                                <button type="button" className="btn btn-secondary btn-small" onClick={openAuthorSearch}>
+                                    Change
+                                </button>
+                            </>
+                        }
+                    />
                 )}
 
                 <AuthorModal

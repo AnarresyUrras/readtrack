@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { authorsApi } from "../api/authors";
 import type { Author, AuthorGender } from "../types/Author";
+import { fetchAuthorPhotoUrl } from "../utils/authorPhoto";
 
 interface AuthorModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
   const [suggestions, setSuggestions] = useState<Author[] | null>(null);
   const [status, setStatus] = useState<"idle" | "searching" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -34,6 +37,21 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
     setStatus("idle");
     setError(null);
   }, [isOpen, mode, initialAuthor]);
+
+  useEffect(() => {
+    const nameToLookup = mode === 'edit' ? initialAuthor?.name : query;
+    if (!nameToLookup?.trim()) {
+        setPhotoUrl(null);
+        return;
+    }
+    setPhotoError(false);
+    const delay = mode === 'edit' ? 0 : 500;
+    const timeout = setTimeout(async () => {
+        const url = await fetchAuthorPhotoUrl(nameToLookup);
+        setPhotoUrl(url);
+    }, delay);
+    return () => clearTimeout(timeout);
+}, [mode, initialAuthor, query]);
 
   async function handleSearch() {
     if (!query.trim()) return;
@@ -100,6 +118,16 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
       onClose={onClose}
       title={mode === "edit" ? "Edit author" : "Find or create author"}
     >
+    {photoUrl && !photoError && (
+        <div className="author-photo">
+            <img
+                src={photoUrl}
+                alt={`Portrait of ${mode === 'edit' ? initialAuthor?.name : query}`}
+                onError={() => setPhotoError(true)}
+            />
+        </div>
+    )}
+    
       {mode === "search" && (
         <div className="form-row">
           <label htmlFor="modalAuthorQuery">Author name</label>

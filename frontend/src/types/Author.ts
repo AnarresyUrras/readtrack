@@ -5,6 +5,7 @@ export interface Author {
   name: string;
   author_gender?: AuthorGender;
   country?: string;
+  openlibrary_id?: string;
 }
 
 export interface AuthorFindOrCreate {

@@ -29,6 +29,8 @@ def create_author(db: Session, author: AuthorCreate) -> Author:
 
 def update_author(db: Session, db_author: Author, author: AuthorCreate) -> Author:
     db_author.name = author.name
+    db_author.author_gender = author.author_gender
+    db_author.country = author.country
     db.commit()
     db.refresh(db_author)
     return db_author
