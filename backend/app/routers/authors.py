@@ -8,6 +8,7 @@ from app.crud.authors import (
     find_or_create_author,
     get_author,
     get_authors,
+    update_author,
 )
 from app.database import get_db
 from app.schemas.author import (
@@ -64,3 +65,16 @@ def remove_author(author_id: int, db: Session = Depends(get_db)):
         )
         
     delete_author(db, author)
+
+@router.put("/{author_id}", response_model=AuthorResponse)
+def edit_author(
+    author_id: int,
+    author: AuthorCreate,
+    db: Session = Depends(get_db),
+):
+    db_author = get_author(db, author_id)
+
+    if db_author is None:
+        raise HTTPException(status_code=404, detail="Author not found")
+
+    return update_author(db, db_author, author)
