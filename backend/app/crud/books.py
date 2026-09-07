@@ -8,8 +8,11 @@ from app.models.reading import Reading
 from app.models.enums import ReadingStatus
 
 
-def get_books(db: Session) -> list[Book]:
-    statement = select(Book).order_by(Book.id)
+def get_books(db: Session, author_id: int | None = None) -> list[Book]:
+    statement = select(Book)
+    if author_id is not None:
+        statement = statement.where(Book.author_id == author_id)
+    statement = statement.order_by(Book.id)
     return list(db.scalars(statement).all())
 
 

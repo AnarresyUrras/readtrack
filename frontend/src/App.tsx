@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Nav from './components/Nav';
 import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
+import AuthorDetail from './pages/AuthorDetail';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/authors/:id" element={<AuthorDetail />} />
         </Routes>
       </main>
     </BrowserRouter>

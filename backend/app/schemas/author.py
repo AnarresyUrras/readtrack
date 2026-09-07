@@ -11,6 +11,11 @@ class AuthorBase(BaseModel):
 class AuthorCreate(AuthorBase):
     pass
 
+class AuthorUpdate(BaseModel):
+    """Partial update for an author. All fields are optional."""
+    name: str | None = None
+    author_gender: AuthorGender | None = None
+    country: str | None = None
 
 class AuthorResponse(AuthorBase):
     id: int
