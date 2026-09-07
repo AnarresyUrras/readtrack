@@ -12,6 +12,7 @@ from app.crud.authors import (
 )
 from app.database import get_db
 from app.schemas.author import (
+    AuthorUpdate,
     AuthorCreate,
     AuthorResponse,
     AuthorFindOrCreate,
@@ -69,7 +70,7 @@ def remove_author(author_id: int, db: Session = Depends(get_db)):
 @router.put("/{author_id}", response_model=AuthorResponse)
 def edit_author(
     author_id: int,
-    author: AuthorCreate,
+    author: AuthorUpdate,
     db: Session = Depends(get_db),
 ):
     db_author = get_author(db, author_id)

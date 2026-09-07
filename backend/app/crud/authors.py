@@ -2,7 +2,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.models.author import Author
-from app.schemas.author import AuthorFindOrCreate, AuthorMatchResult, AuthorCreate
+from app.schemas.author import AuthorFindOrCreate, AuthorMatchResult, AuthorCreate, AuthorUpdate
 from app.models.book import Book
 
 
@@ -27,10 +27,13 @@ def create_author(db: Session, author: AuthorCreate) -> Author:
     db.refresh(db_author)    
     return db_author
 
-def update_author(db: Session, db_author: Author, author: AuthorCreate) -> Author:
-    db_author.name = author.name
-    db_author.author_gender = author.author_gender
-    db_author.country = author.country
+def update_author(db: Session, db_author: Author, author: AuthorUpdate) -> Author:
+    if author.name is not None:
+        db_author.name = author.name
+    if author.author_gender is not None:
+        db_author.author_gender = author.author_gender
+    if author.country is not None:
+        db_author.country = author.country
     db.commit()
     db.refresh(db_author)
     return db_author

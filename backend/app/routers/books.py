@@ -20,8 +20,8 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[BookResponse])
-def read_books(db: Session = Depends(get_db)):
-    return get_books(db)
+def read_books(author_id: int | None = None, db: Session = Depends(get_db)):
+    return get_books(db, author_id=author_id)
 
 
 @router.get("/{book_id}", response_model=BookResponse)

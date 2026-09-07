@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Book, ReadingStatus } from '../types/Book';
 import { getDisplayStatus } from '../utils/readingStatus';
 
@@ -42,7 +43,8 @@ function BookCard({ book, onUpdateStatus, onEdit, onDelete }: BookCardProps) {
             </div>
             <div className="details">
                 <h2>{book.title}</h2>
-                <p className='book-author'>{book.author.name}</p>
+                <p className='book-author'>
+                    <Link to={`/authors/${book.author.id}`}>{book.author.name}</Link>                </p>
                 <p className="book-genre">{book.genre}</p>
                 <p className="book-year">{book.year}</p>
                 <p className="book-pages">{book.pages && <span>{book.pages} pages</span>}</p>

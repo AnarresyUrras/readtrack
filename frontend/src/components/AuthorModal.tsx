@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Modal from "./Modal";
+import AuthorEditForm from "./AuthorEditForm";
 import { authorsApi } from "../api/authors";
 import type { Author, AuthorGender } from "../types/Author";
 import { fetchAuthorPhotoUrl } from "../utils/authorPhoto";
@@ -39,19 +40,19 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
   }, [isOpen, mode, initialAuthor]);
 
   useEffect(() => {
-    const nameToLookup = mode === 'edit' ? initialAuthor?.name : query;
+    const nameToLookup = mode === "edit" ? initialAuthor?.name : query;
     if (!nameToLookup?.trim()) {
-        setPhotoUrl(null);
-        return;
+      setPhotoUrl(null);
+      return;
     }
     setPhotoError(false);
-    const delay = mode === 'edit' ? 0 : 500;
+    const delay = mode === "edit" ? 0 : 500;
     const timeout = setTimeout(async () => {
-        const url = await fetchAuthorPhotoUrl(nameToLookup);
-        setPhotoUrl(url);
+      const url = await fetchAuthorPhotoUrl(nameToLookup);
+      setPhotoUrl(url);
     }, delay);
     return () => clearTimeout(timeout);
-}, [mode, initialAuthor, query]);
+  }, [mode, initialAuthor, query]);
 
   async function handleSearch() {
     if (!query.trim()) return;
@@ -94,22 +95,13 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
     }
   }
 
-  async function handleSaveEdit() {
+  async function handleEditSubmit(data: { author_gender?: string; country?: string }) {
     if (!initialAuthor) return;
-    setStatus("searching");
-    setError(null);
-    try {
-      const updated = await authorsApi.update(initialAuthor.id, {
-        name: initialAuthor.name,
-        author_gender: gender || undefined,
-        country: country.trim() || undefined,
-      });
-      onResolved(updated);
-      setStatus("idle");
-    } catch {
-      setStatus("error");
-      setError("Could not update author. Try again.");
-    }
+    const updated = await authorsApi.update(initialAuthor.id, {
+      author_gender: data.author_gender,
+      country: data.country,
+    });
+    onResolved(updated);
   }
 
   return (
@@ -118,16 +110,16 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
       onClose={onClose}
       title={mode === "edit" ? "Edit author" : "Find or create author"}
     >
-    {photoUrl && !photoError && (
+      {photoUrl && !photoError && (
         <div className="author-photo">
-            <img
-                src={photoUrl}
-                alt={`Portrait of ${mode === 'edit' ? initialAuthor?.name : query}`}
-                onError={() => setPhotoError(true)}
-            />
+          <img
+            src={photoUrl}
+            alt={`Portrait of ${mode === "edit" ? initialAuthor?.name : query}`}
+            onError={() => setPhotoError(true)}
+          />
         </div>
-    )}
-    
+      )}
+
       {mode === "search" && (
         <div className="form-row">
           <label htmlFor="modalAuthorQuery">Author name</label>
@@ -148,29 +140,33 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
         </p>
       )}
 
-      <div className="form-row">
-        <label htmlFor="modalAuthorGender">Gender (optional)</label>
-        <select
-          id="modalAuthorGender"
-          value={gender}
-          onChange={(e) => setGender(e.target.value as AuthorGender | "")}
-        >
-          <option value="">—</option>
-          <option value="female">Female</option>
-          <option value="male">Male</option>
-          <option value="diverse">Diverse</option>
-        </select>
-      </div>
+      {mode === "search" && (
+        <>
+          <div className="form-row">
+            <label htmlFor="modalAuthorGender">Gender (optional)</label>
+            <select
+              id="modalAuthorGender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value as AuthorGender | "")}
+            >
+              <option value="">—</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="diverse">Diverse</option>
+            </select>
+          </div>
 
-      <div className="form-row">
-        <label htmlFor="modalAuthorCountry">Country (optional)</label>
-        <input
-          id="modalAuthorCountry"
-          type="text"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-        />
-      </div>
+          <div className="form-row">
+            <label htmlFor="modalAuthorCountry">Country (optional)</label>
+            <input
+              id="modalAuthorCountry"
+              type="text"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+            />
+          </div>
+        </>
+      )}
 
       {error && <p className="form-error">{error}</p>}
 
@@ -193,11 +189,11 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
         </div>
       )}
 
-      <div className="form-actions">
-        <button type="button" className="btn btn-secondary" onClick={onClose}>
-          Cancel
-        </button>
-        {mode === "search" ? (
+      {mode === "search" ? (
+        <div className="form-actions">
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
           <button
             type="button"
             className="btn btn-primary"
@@ -206,17 +202,16 @@ function AuthorModal({ isOpen, mode, initialAuthor, onClose, onResolved }: Autho
           >
             {status === "searching" ? "Searching…" : "Search author"}
           </button>
-        ) : (
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleSaveEdit}
-            disabled={status === "searching"}
-          >
-            {status === "searching" ? "Saving…" : "Save"}
-          </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        initialAuthor && (
+          <AuthorEditForm
+            author={initialAuthor}
+            onSubmit={handleEditSubmit}
+            onCancel={onClose}
+          />
+        )
+      )}
     </Modal>
   );
 }
